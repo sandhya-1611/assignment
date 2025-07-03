@@ -1,48 +1,28 @@
-// import React from 'react';
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 
-// function App() {
-//   return (
-//     <div className="App">
-//       <h1>Hello, React + TypeScript!</h1>
-//     </div>
-//   );
-// }
+const theme = createTheme()
 
-// export default App;
 
-import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-
-const theme = createTheme({
-  palette: {
-    mode: 'dark', 
-    primary: {
-      main: '#1976d2',
-    },
-  },
-});
+const Home = () => <div>Home Page</div>
+const PatientDashboard = () => <div>Patient Dashboard</div>
+const AdminDashboard = () => <div>Admin Dashboard</div>
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="sm" sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Welcome to DentalFlow
-        </Typography>
-        <Typography variant="body1" paragraph>
-          This is a basic MUI setup using React and TypeScript.
-        </Typography>
-        <Button variant="contained" color="primary">
-          Get Started
-        </Button>
-      </Container>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/patient/dashboard" element={<PatientDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App
