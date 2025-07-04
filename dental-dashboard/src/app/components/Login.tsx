@@ -1,5 +1,5 @@
 import { useAuth } from "@/app/context/AuthContext"
-import { acceptableCredentials } from "@/app/checkIsAdmin"
+import { acceptableCredentials } from "@/app/utils/acceptableEmails"
 import { checkIsAdmin } from "@/app/utils/checkIsAdmin"
 import { Alert, AlertColor, Snackbar } from "@mui/material"
 import { useState } from "react"
