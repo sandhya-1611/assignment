@@ -1,68 +1,70 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useEffect, useState } from "react";
 
-interface User {
-  id: string
-  name: string
-  email: string
-  isAdmin: boolean
-  patientId?: string
+type User = {
+    email: string,
+    isAdmin: boolean
+    patientId?: string
+    id: string
+    name: string
+} | null
+
+type AuthContextType = {
+    user: User,
+    logIn: (userData: User) => void,
+    logOut: () => void
 }
 
-interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
-  isLoading: boolean
-}
+const Authcontext = createContext<AuthContextType | undefined>(undefined) 
 
-const AuthContext = createContext<AuthContextType | null>(null)
+export function AuthProvider({children}: {children: React.ReactNode}){
+ 
+    const [user, setUser] = useState<User>(null)
+    const navigate = useNavigate()
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+    useEffect(() => {
+        // check localStorage for loggedInUser
+        const loggedInUser = localStorage.getItem("loggedInUser")
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+        if(loggedInUser){
+            const userData = JSON.parse(loggedInUser)
+            setUser(userData)
+            // navigate them to the respective dashboard using the parsed data directly
+            if(userData && userData.isAdmin){
+                navigate("/admin/dashboard")
+            }else{
+                navigate("/patient/dashboard")
+            }
+        }
+        else{
+            // if no user is loggen in, redirect them to the login page
+            navigate("/")
+        }
+    },[navigate])
 
-  useEffect(() => {
-    // Check for stored auth
-    const storedUser = localStorage.getItem('dentalflow_user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    const logIn = (userData: User) => {
+        setUser(userData)
+        localStorage.setItem("loggedInUser",JSON.stringify(userData))
+        if(userData && userData.isAdmin){
+            navigate("/admin/dashboard")
+        }else{
+            navigate("/patient/dashboard")
+        }
     }
-    setIsLoading(false)
-  }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Hardcoded users for demo
-    const users = [
-      { id: '1', name: 'Admin User', email: 'admin@dentalflow.com', isAdmin: true },
-      { id: '2', name: 'John Doe', email: 'john.doe@example.com', isAdmin: false, patientId: '1' },
-    ]
-
-    const foundUser = users.find(u => u.email === email)
-    if (foundUser) {
-      setUser(foundUser)
-      localStorage.setItem('dentalflow_user', JSON.stringify(foundUser))
-      return true
+    const logOut = () => {
+        setUser(null)
+        localStorage.removeItem("loggedInUser")
+        navigate("/")
     }
-    return false
-  }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('dentalflow_user')
-  }
+    return <Authcontext.Provider value={{user, logIn, logOut}}>{children}</Authcontext.Provider>
+}
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
-      {children}
-    </AuthContext.Provider>
-  )
+export function useAuth(){
+    const context = useContext(Authcontext)
+    if(!context){
+        throw new Error("useAuth must be used within an AuthProvider")
+    }
+    return context
 }

@@ -1,70 +1,89 @@
-import React, { useState } from 'react'
-import { Box, Card, CardContent, TextField, Button, Typography, Alert } from '@mui/material'
-import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useAuth } from "@/app/context/AuthContext"
+import { acceptableCredentials } from "@/app/checkIsAdmin"
+import { checkIsAdmin } from "@/app/utils/checkIsAdmin"
+import { Alert, AlertColor, Snackbar } from "@mui/material"
+import { useState } from "react"
+import { useData } from "../context/DataContext"
 
-export const Login: React.FC = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const { login } = useAuth()
-  const navigate = useNavigate()
+type LoginCredentials = {
+    email: string,
+    password: string
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    
-    const success = await login(email, password)
-    if (success) {
-      // Redirect based on user role will be handled by the main app
-      navigate('/')
-    } else {
-      setError('Invalid credentials')
+const Login = () => {
+    const {logIn} = useAuth() // using the context provider.
+    const {validateUser} = useData()
+    const [loginCredentials, setLoginCredentials] = useState<LoginCredentials>({
+        email: "",
+        password: ""
+    })
+
+    const [openSnackbar, setOpenSnackbar] = useState({
+        open: false,
+        severity: "" //success, error
+    })
+    const [snackbarMessage, setSnackbarMessage] = useState("")
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        console.log(loginCredentials)
+
+        const user = validateUser(loginCredentials.email,loginCredentials.password)
+        if(!user){
+            setSnackbarMessage("Invalid credentials")
+            setOpenSnackbar({open: true, severity: "error"})
+            return
+        }
+        
+        // we are storing all info except the password for the logged in user.
+        const loggedInUser = {
+                email: user.email,
+                isAdmin: user.isAdmin,
+                ...(user.isAdmin ? {} : { patientId: user.patientId }),
+                id: user.id,
+                name: user.name
+            }
+        
+        setSnackbarMessage("Login successful")
+        setOpenSnackbar({open: true, severity: "success"})
+        
+        //sets the logged in user in the localStorage
+        logIn(loggedInUser)
     }
-  }
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-      <Card sx={{ maxWidth: 400, width: '100%', mx: 2 }}>
-        <CardContent>
-          <Typography variant="h4" component="h1" gutterBottom textAlign="center">
-            DentalFlow Login
-          </Typography>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              margin="normal"
-              required
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign In
-            </Button>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            Demo: admin@dentalflow.com / admin123<br />
-            Or: john.doe@example.com / patient123
-          </Typography>
-        </CardContent>
-      </Card>
-    </Box>
+    <section className="flex flex-col gap-4 items-center justify-center max-w-md w-full border border-gray-300 rounded-md p-4">
+        <h2 className="text-2xl font-bold">Login</h2>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+        <input type="text" placeholder="Email" className="w-full p-2 border border-gray-300 rounded-md"
+        value={loginCredentials.email}
+        onChange={(e) => setLoginCredentials((prev) => ({...prev,email: e.target.value}))}
+        />
+        <input type="password" placeholder="Password" className="w-full p-2 border border-gray-300 rounded-md"
+        value={loginCredentials.password}
+        onChange={(e) => setLoginCredentials((prev) => ({...prev,password: e.target.value}))}
+        />
+        <button type="submit" className="w-full cursor-pointer p-2 bg-blue-500 text-white rounded-md">Login</button>
+</form>
+
+<Snackbar
+  open={openSnackbar.open}
+  autoHideDuration={6000}
+  onClose={() => setOpenSnackbar({open: false, severity: ""})}
+>
+<Alert
+    onClose={() => setOpenSnackbar({open: false, severity: ""})}
+    severity={openSnackbar.severity as AlertColor}
+    variant="filled"
+    sx={{ width: '100%' }}
+  >
+    {snackbarMessage}
+  </Alert>
+</Snackbar>
+    </section>
+
+    
   )
 }
+
+export default Login
