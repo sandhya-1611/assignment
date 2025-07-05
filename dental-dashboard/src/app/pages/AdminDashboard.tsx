@@ -9,7 +9,8 @@ import {
   ExitToAppRounded,
   AddRounded,
   EditRounded,
-  DeleteRounded
+  DeleteRounded,
+  MenuRounded,LightModeRounded, DarkModeRounded
 } from '@mui/icons-material';
 import { 
   Typography, 
@@ -47,6 +48,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { formatAppointmentDate } from '../utils/dateFormatter';
+import { useTheme } from '@mui/material/styles';
+import { useColorMode } from '../context/themeContext';
 import FileUpload from '../components/FileUpload';
 import FileViewer from '../components/FileViewer';
 import Calendar from '../components/Calendar';
@@ -825,6 +828,16 @@ const SettingsContent = () => {
 };
 
 export default function AdminDashboard() {
+  const theme = useTheme();
+const { toggleColorMode } = useColorMode();
+const isDarkMode = theme.palette.mode === 'dark';
+  const [mobileOpen, setMobileOpen] = useState(false);
+const [drawerOpen, setDrawerOpen] = useState(false);
+
+const handleDrawerToggle = () => {
+  setDrawerOpen(!drawerOpen);
+};
+
   const [currentPage, setCurrentPage] = useState('overview');
   const { logOut } = useAuth();
 
@@ -849,16 +862,90 @@ export default function AdminDashboard() {
     }
   };
 
-  const drawerWidth = 240;
+const drawerWidth = 200;
+const miniDrawerWidth = 64;
+
+  const drawerContent = (
+  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Toolbar />
+    <Box
+      sx={{
+        overflowX: 'hidden',
+        overflowY: 'hidden', // ❌ Removes vertical scroll
+        flexGrow: 1,
+      }}
+    >
+      <List sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {navigationItems.map((item) => (
+          <ListItem key={item.id} disablePadding sx={{ width: '100%' }}>
+            <ListItemButton
+              selected={currentPage === item.id}
+              onClick={() => {
+                setCurrentPage(item.id);
+                setMobileOpen(false);
+              }}
+              sx={{
+                flexDirection: drawerOpen ? 'row' : 'column',
+                justifyContent: drawerOpen ? 'flex-start' : 'center',
+                alignItems: 'center',
+                px: drawerOpen ? 2 : 0,
+                py: 1.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  justifyContent: 'center',
+                  color: currentPage === item.id ? 'primary.main' : 'inherit',
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.title}
+                primaryTypographyProps={{
+                  fontSize: drawerOpen ? '1rem' : '0.6rem',
+                  textAlign: 'center',
+                  mt: drawerOpen ? 0 : 0.5,
+                  display: drawerOpen ? 'inline' : 'block',
+                  whiteSpace: 'normal',
+                }}
+                sx={{
+                  opacity: 1,
+                  pl: drawerOpen ? 2 : 0,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  </Box>
+);
+
+
 
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
+          <IconButton
+      color="inherit"
+      edge="start"
+      onClick={handleDrawerToggle}
+      sx={{ mr: 2 }}
+    >
+      <MenuRounded />
+    </IconButton>
           <LocalHospitalRounded sx={{ mr: 2 }} />
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             DentalFlow - Admin Portal
           </Typography>
+          
+          <IconButton color="inherit" onClick={toggleColorMode}>
+            {isDarkMode ? <LightModeRounded /> : <DarkModeRounded />}
+          </IconButton>
+
           <Button color="inherit" onClick={logOut} startIcon={<ExitToAppRounded />}>
             Logout
           </Button>
@@ -866,40 +953,50 @@ export default function AdminDashboard() {
       </AppBar>
 
       <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {navigationItems.map((item) => (
-              <ListItem key={item.id} disablePadding>
-                <ListItemButton 
-                  selected={currentPage === item.id}
-                  onClick={() => setCurrentPage(item.id)}
-                >
-                  <ListItemIcon>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
+  variant="permanent"
+  open={drawerOpen}
+  sx={{
+    width: drawerOpen ? drawerWidth : miniDrawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    transition: (theme) =>
+      theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+    '& .MuiDrawer-paper': {
+      width: drawerOpen ? drawerWidth : miniDrawerWidth,
+      overflow: 'hidden',
+      transition: (theme) =>
+        theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
+    },
+  }}
+>
+  {drawerContent}
+</Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
-        {renderContent()}
-      </Box>
+
+  <Box
+  component="main"
+  sx={{
+    flexGrow: 1,
+    p: 2, // reduce padding inside main content
+    transition: (theme) =>
+      theme.transitions.create('margin', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    marginLeft: drawerOpen ? `${drawerWidth - 180}px` : `${miniDrawerWidth - 54}px`, // reduce gap
+  }}
+>
+  <Toolbar />
+  {renderContent()}
+</Box>
+
     </Box>
   );
 }

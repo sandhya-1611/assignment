@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import './app/globals.css'
+import { ColorModeProvider } from './app/context/themeContext'
 
 console.log('main.tsx is executing...')
 
@@ -18,6 +19,8 @@ const root = createRoot(rootElement)
 
 root.render(
   <StrictMode>
-    <App />
+    <ColorModeProvider>
+      <App />
+    </ColorModeProvider>
   </StrictMode>,
 )
