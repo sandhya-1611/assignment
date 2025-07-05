@@ -5,7 +5,8 @@ import {
   PersonRounded,
   ExitToAppRounded,
   LocalHospitalRounded,
-  AddRounded
+  AddRounded, DarkModeRounded, LightModeRounded,
+  MenuRounded
 } from '@mui/icons-material';
 import { 
   Typography, 
@@ -25,12 +26,15 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListItemButton
+  ListItemButton,
+  IconButton
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
+import { useColorMode } from '../context/themeContext';
 
-// Helper functions
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { 
@@ -454,9 +458,18 @@ const ProfileContent = ({ user, patient }: { user: any; patient: any }) => (
 export default function PatientDashboard() {
   const [currentPage, setCurrentPage] = useState('upcoming');
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const handleDrawerToggle = () => {
+  setDrawerOpen(!drawerOpen);
+};
   const { user, logOut } = useAuth();
   const { getIncidentsByPatientId, getPatientById, addIncident, isLoading } = useData();
+
+  const theme = useTheme();
+const { toggleColorMode } = useColorMode();
+const isDarkMode = theme.palette.mode === 'dark';
+
 
   // Get patient data and incidents
   const patient = user?.patientId ? getPatientById(user.patientId) : null;
@@ -524,16 +537,29 @@ export default function PatientDashboard() {
     }
   };
 
-  const drawerWidth = 240;
+const drawerWidth = 250;
+const miniDrawerWidth = 104;
 
   return (
+    <ThemeProvider theme={theme}>
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2 }}
+          >
+            <MenuRounded />
+          </IconButton>
           <LocalHospitalRounded sx={{ mr: 2 }} />
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             DentalFlow - Patient Portal
           </Typography>
+          <IconButton color="inherit" onClick={toggleColorMode}>
+            {isDarkMode ? <LightModeRounded /> : <DarkModeRounded />}
+          </IconButton>
           <Button color="inherit" onClick={logOut} startIcon={<ExitToAppRounded />}>
             Logout
           </Button>
@@ -541,33 +567,73 @@ export default function PatientDashboard() {
       </AppBar>
 
       <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
+  variant="permanent"
+  open={drawerOpen}
+  sx={{
+    width: drawerOpen ? drawerWidth : miniDrawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    '& .MuiDrawer-paper': {
+      width: drawerOpen ? drawerWidth : miniDrawerWidth,
+      overflowX: 'hidden',
+      overflowY: 'hidden',
+      scrollbarWidth: 'none', // For Firefox
+      '&::-webkit-scrollbar': {
+        display: 'none', // For Chrome/Safari
+      },
+    },
+  }}
+>
+
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            {navigationItems.map((item) => (
-              <ListItem key={item.id} disablePadding>
-                <ListItemButton 
-                  selected={currentPage === item.id}
-                  onClick={() => setCurrentPage(item.id)}
-                >
-                  <ListItemIcon>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+  {navigationItems.map((item) => (
+    <ListItem key={item.id} disablePadding sx={{ justifyContent: 'center' }}>
+      <ListItemButton
+  onClick={() => setCurrentPage(item.id)}
+  selected={currentPage === item.id}
+  sx={{
+    flexDirection: drawerOpen ? 'row' : 'column',
+    alignItems: drawerOpen ? 'center' : 'center',
+    textAlign: drawerOpen ? 'center' : 'center',
+    py: 1,
+    minHeight: 72,
+    px: drawerOpen ? 2 : 1,
+  }}
+>
+  <ListItemIcon
+    sx={{
+      minWidth: 0,
+      mr: drawerOpen ? 2 : 0,
+      justifyContent: 'center',
+    }}
+  >
+    {item.icon}
+  </ListItemIcon>
+
+  <ListItemText
+    primary={item.title}
+    primaryTypographyProps={{
+      variant: 'caption',
+      sx: {
+        fontSize: drawerOpen ? '0.875rem' : '10px',
+        lineHeight: 1.2,
+        wordBreak: drawerOpen ? 'normal' : 'break-word',
+        whiteSpace: drawerOpen ? 'nowrap' : 'normal',
+        maxWidth: drawerOpen ? 'none' : miniDrawerWidth - 16,
+        textAlign: drawerOpen ? 'left' : 'center',
+      },
+    }}
+    sx={{ m: 0 }}
+  />
+</ListItemButton>
+
+    </ListItem>
+  ))}
+</List>
+
         </Box>
       </Drawer>
 
@@ -582,5 +648,6 @@ export default function PatientDashboard() {
         onSubmit={handleSubmitAppointment}
       />
     </Box>
+    </ThemeProvider>
   );
 }
