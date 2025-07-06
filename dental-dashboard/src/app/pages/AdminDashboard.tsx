@@ -11,7 +11,8 @@ import {
   EditRounded,
   DeleteRounded,
   MenuRounded,LightModeRounded, DarkModeRounded,
-  InsertDriveFileRounded, DownloadRounded, VisibilityRounded
+  InsertDriveFileRounded, DownloadRounded, VisibilityRounded,
+  UploadFileRounded
 } from '@mui/icons-material';
 import { 
   Typography, 
@@ -163,7 +164,7 @@ const PatientFormDialog = ({
   );
 };
 
-// Incident Form Dialog Component (simplified without FileUpload for now)
+
 const IncidentFormDialog = ({ 
   open, 
   onClose, 
@@ -177,36 +178,54 @@ const IncidentFormDialog = ({
 }) => {
   const { patients } = useData();
   const [formData, setFormData] = useState({
-    patientId: incident?.patientId || '',
-    title: incident?.title || '',
-    description: incident?.description || '',
-    comments: incident?.comments || '',
-    appointmentDate: incident?.appointmentDate?.substring(0, 16) || '',
-    cost: incident?.cost || 0,
-    status: incident?.status || 'Scheduled'
-  });
+  patientId: incident?.patientId || '',
+  title: incident?.title || '',
+  description: incident?.description || '',
+  comments: incident?.comments || '',
+  appointmentDate: incident?.appointmentDate?.substring(0, 16) || '',
+  cost: incident?.cost || 0,
+  status: incident?.status || 'Scheduled',
+  files: incident?.files || []
+});
+
+const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (files) {
+    const fileArray = Array.from(files);
+    setFormData((prevData) => ({
+      ...prevData,
+      files: [...prevData.files, ...fileArray],
+    }));
+  }
+};
+
+
 
   useEffect(() => {
     if (incident) {
       setFormData({
-        patientId: incident.patientId || '',
-        title: incident.title || '',
-        description: incident.description || '',
-        comments: incident.comments || '',
-        appointmentDate: incident.appointmentDate?.substring(0, 16) || '',
-        cost: incident.cost || 0,
-        status: incident.status || 'Scheduled'
-      });
+  patientId: incident.patientId || '',
+  title: incident.title || '',
+  description: incident.description || '',
+  comments: incident.comments || '',
+  appointmentDate: incident.appointmentDate?.substring(0, 16) || '',
+  cost: incident.cost || 0,
+  status: incident.status || 'Scheduled',
+  files: incident.files || []
+});
+
     } else {
-      setFormData({ 
-        patientId: '', 
-        title: '', 
-        description: '', 
-        comments: '', 
-        appointmentDate: '', 
-        cost: 0, 
-        status: 'Scheduled' 
-      });
+      setFormData({
+  patientId: '',
+  title: '',
+  description: '',
+  comments: '',
+  appointmentDate: '',
+  cost: 0,
+  status: 'Scheduled',
+  files: []
+});
+
     }
   }, [incident]);
 
@@ -215,16 +234,23 @@ const IncidentFormDialog = ({
       alert('Please fill in all required fields');
       return;
     }
-    onSubmit({ 
-      ...formData, 
-      id: incident?.id,
-      files: incident?.files || []
-    });
+    onSubmit({  
+  ...formData, 
+  id: incident?.id
+});
+
     onClose();
-    setFormData({ 
-      patientId: '', title: '', description: '', comments: '', 
-      appointmentDate: '', cost: 0, status: 'Scheduled' 
+        setFormData({
+      patientId: '',
+      title: '',
+      description: '',
+      comments: '',
+      appointmentDate: '',
+      cost: 0,
+      status: 'Scheduled',
+      files: []
     });
+
   };
 
   return (
@@ -232,19 +258,22 @@ const IncidentFormDialog = ({
       <DialogTitle>{incident ? 'Edit Appointment' : 'Schedule New Appointment'}</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} style={{ marginTop: '10px' }}>
-          <FormControl fullWidth>
-            <InputLabel>Patient *</InputLabel>
-            <Select
-              value={formData.patientId}
-              onChange={(e) => setFormData({...formData, patientId: e.target.value})}
-            >
-              {patients.map((patient) => (
-                <MenuItem key={patient.id} value={patient.id}>
-                  {patient.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+
+        <FormControl fullWidth variant="outlined">
+          <InputLabel>Patient *</InputLabel>
+          <Select
+            label="Patient *"
+            value={formData.patientId}
+            onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
+          >
+            {patients.map((patient) => (
+              <MenuItem key={patient.id} value={patient.id}>
+                {patient.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
           <TextField
             label="Treatment Title *"
             variant="outlined"
@@ -280,10 +309,11 @@ const IncidentFormDialog = ({
               onChange={(e) => setFormData({...formData, cost: Number(e.target.value)})}
             />
             <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+              <InputLabel shrink>Status</InputLabel>
               <Select
+                label="Status"
                 value={formData.status}
-                onChange={(e) => setFormData({...formData, status: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               >
                 <MenuItem value="Scheduled">Scheduled</MenuItem>
                 <MenuItem value="In Progress">In Progress</MenuItem>
@@ -301,6 +331,39 @@ const IncidentFormDialog = ({
             value={formData.comments}
             onChange={(e) => setFormData({...formData, comments: e.target.value})}
           />
+          {/* File Upload Section */}
+        <Box>
+  <Typography variant="subtitle1" gutterBottom>Treatment Files</Typography>
+  <Typography variant="body2" color="textSecondary">
+    Accepted formats: Images, PDF, Word documents. Max size: 10MB per file. Max files: 5
+  </Typography>
+  <input
+    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+    style={{ display: 'none' }}
+    id="upload-files-input"
+    multiple
+    type="file"
+    onChange={handleFileChange}
+  />
+  <label htmlFor="upload-files-input">
+    <Button variant="outlined" startIcon={<UploadFileRounded />} component="span" sx={{ mt: 1 }}>
+      Upload Files
+    </Button>
+  </label>
+  {formData.files.length === 0 ? (
+    <Typography variant="body2" sx={{ mt: 1 }}>No files uploaded yet. Click "Upload Files" to add treatment records.</Typography>
+  ) : (
+    <List sx={{ mt: 1 }}>
+      {formData.files.map((file, index) => (
+        <ListItem key={index}>
+          <ListItemText primary={file.name} />
+        </ListItem>
+      ))}
+    </List>
+  )}
+</Box>
+
+
         </Box>
       </DialogContent>
       <DialogActions>
