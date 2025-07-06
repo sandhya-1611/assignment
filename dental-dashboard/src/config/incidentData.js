@@ -106,6 +106,28 @@ export const incidentData = [
     "files": []
   },
   {
+    "id": "i1",
+    "patientId": "p1",
+    "title": "Tooth Cleaning",
+    "description": "Dental plaque removal",
+    "comments": "Suggested every 6 months",
+    "appointmentDate": "2025-07-30T13:00:00",
+    "cost": 70,
+    "status": "Scheduled",
+    "files": []
+  },
+  {
+    "id": "i1",
+    "patientId": "p1",
+    "title": "RCT",
+    "description": "Recurring toothaches",
+    "comments": "MRI scan scheduled",
+    "appointmentDate": "2025-07-19T09:00:00",
+    "cost": 90,
+    "status": "Scheduled",
+    "files": []
+  },
+  {
     "id": "i9",
     "patientId": "p11",
     "title": "RCT",

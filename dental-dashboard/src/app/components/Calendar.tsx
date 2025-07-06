@@ -104,7 +104,6 @@ const Calendar: React.FC<CalendarProps> = ({ appointments, patients }) => {
 
   return (
     <div>
-      <Typography variant="h4" gutterBottom>Calendar View</Typography>
       
       <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom="20px">
         <Button 

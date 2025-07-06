@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { 
   DashboardRounded, 
@@ -848,17 +849,18 @@ const TreatmentsContent = () => {
 const CalendarContent = () => {
   const { incidents, patients } = useData();
   
-  return (
+   return (
     <div>
       <Typography variant="h4" gutterBottom>Calendar View</Typography>
-      <Card>
+      <Card sx={{ marginBottom: 2 }}>
         <CardContent>
-          <Typography>Calendar component would be displayed here</Typography>
           <Typography variant="body2" color="textSecondary">
             Total appointments: {incidents.length}
           </Typography>
         </CardContent>
       </Card>
+      
+      <Calendar appointments={incidents} patients={patients} />
     </div>
   );
 };
@@ -956,9 +958,9 @@ const SettingsContent = () => {
           <Typography variant="body2">Address: 123 Healthcare Ave</Typography>
           <Typography variant="body2">Phone: (555) 987-6543</Typography>
           <Typography variant="body2">Email: admin@dentalflow.com</Typography>
-          <Button variant="outlined" style={{ marginTop: '15px' }}>
+          {/* <Button variant="outlined" style={{ marginTop: '15px' }}>
             Edit Settings
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
       

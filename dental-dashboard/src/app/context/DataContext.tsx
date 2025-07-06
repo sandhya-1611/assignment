@@ -155,6 +155,18 @@ export function DataProvider({children}: {children: React.ReactNode}){
         return incidents.filter(incident => incident.patientId === patientId)
     }
 
+    const updateProfile = (updateProfile: any) => {
+  setPatients((prev) =>
+    prev.map((p) => (p.id === updateProfile.id ? updateProfile : p))
+  );
+
+  const updatedList = patients.map((p) =>
+    p.id === updateProfile.id ? updateProfile : p
+  );
+  localStorage.setItem('patients', JSON.stringify(updatedList));
+};
+
+
     const getPatientById = (patientId: string): Patient | null => {
         return patients.find(patient => patient.id === patientId) || null
     }
@@ -167,6 +179,7 @@ export function DataProvider({children}: {children: React.ReactNode}){
         addPatient,
         updatePatient,
         deletePatient,
+        updateProfile,
         addIncident,
         updateIncident,
         deleteIncident,

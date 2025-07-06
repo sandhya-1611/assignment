@@ -6,7 +6,7 @@ import {
   ExitToAppRounded,
   LocalHospitalRounded,
   AddRounded, DarkModeRounded, LightModeRounded,
-  MenuRounded
+  MenuRounded,InsertDriveFileRounded, VisibilityRounded, DownloadRounded
 } from '@mui/icons-material';
 import { 
   Typography, 
@@ -27,7 +27,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemButton,
-  IconButton
+  IconButton, Tooltip, Popover
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -145,7 +145,26 @@ const NewAppointmentDialog = ({
   );
 };
 
-// Content components
+const renderFilesCell = (files: any[]) => {
+  if (!files || files.length === 0) return 'No files';
+
+  return (
+    <Box display="flex" flexDirection="column" gap={0.5}>
+      {files.map((file, index) => (
+        <a
+          key={index}
+          href={file.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#1976d2', fontSize: '0.875rem' }}
+        >
+          {file.name || `File ${index + 1}`}
+        </a>
+      ))}
+    </Box>
+  );
+};
+
 const UpcomingAppointmentsContent = ({ 
   onCreateAppointment, 
   upcomingIncidents 
@@ -183,9 +202,9 @@ const UpcomingAppointmentsContent = ({
                   <Typography variant="body2">{formatTime(nextAppointment.appointmentDate)} - {nextAppointment.title}</Typography>
                   <Typography variant="body2">{nextAppointment.description}</Typography>
                   <Typography variant="body2">Status: {nextAppointment.status}</Typography>
-                  <Button variant="outlined" size="small" style={{ marginTop: '10px' }}>
+                  {/* <Button variant="outlined" size="small" style={{ marginTop: '10px' }}>
                     Reschedule
-                  </Button>
+                  </Button> */}
                 </>
               ) : (
                 <Typography color="textSecondary">No upcoming appointments</Typography>
@@ -222,6 +241,7 @@ const UpcomingAppointmentsContent = ({
                     <th style={{ padding: '12px', textAlign: 'left' }}>Treatment</th>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Description</th>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Files</th>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Cost</th>
                   </tr>
                 </thead>
@@ -233,14 +253,35 @@ const UpcomingAppointmentsContent = ({
                       <td style={{ padding: '12px' }}>{incident.title}</td>
                       <td style={{ padding: '12px' }}>{incident.description}</td>
                       <td style={{ padding: '12px' }}>
-                        <span style={{ 
-                          padding: '4px 8px', 
-                          borderRadius: '4px', 
-                          backgroundColor: incident.status === 'Scheduled' ? '#e3f2fd' : '#fff3e0',
-                          color: incident.status === 'Scheduled' ? '#1976d2' : '#f57c00'
-                        }}>
-                          {incident.status}
-                        </span>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.75rem',
+                          fontWeight: 500,
+                          color:
+                            incident.status === 'Completed'
+                              ? '#fff'
+                              : incident.status === 'Scheduled'
+                              ? '#fff'
+                              : '#444',
+                          backgroundColor:
+                            incident.status === 'Completed'
+                              ? '#2e7d32' // green
+                              : incident.status === 'Scheduled'
+                              ? '#1976d2' // blue
+                              : '#e0e0e0', // grey for others
+                          border: 'none',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {incident.status}
+                      </span>
+
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <FilesPopover files={incident.files || []} />
                       </td>
                       <td style={{ padding: '12px' }}>${incident.cost}</td>
                     </tr>
@@ -256,6 +297,79 @@ const UpcomingAppointmentsContent = ({
     </div>
   );
 };
+
+const FilesPopover = ({ files }: { files: any[] }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
+  return (
+    <>
+      <Button
+        onClick={handleOpen}
+        startIcon={<InsertDriveFileRounded />}
+        variant="outlined"
+        size="small"
+        sx={{
+          borderRadius: '20px',
+          padding: '4px 12px',
+          fontSize: '0.75rem',
+          fontWeight: 500,
+          color: '#444',
+          borderColor: '#ccc',
+          textTransform: 'none',
+          backgroundColor: '#f9f9f9',
+          '&:hover': {
+            backgroundColor: '#f0f0f0',
+          }
+        }}
+      >
+        {files.length}
+      </Button>
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        PaperProps={{ sx: { p: 1, minWidth: 200 } }}
+      >
+        {files.length === 0 ? (
+          <Typography sx={{ p: 1 }}>No files</Typography>
+        ) : (
+          files.map((file, index) => (
+            <Box key={index} display="flex" justifyContent="space-between" alignItems="center" p={0.5}>
+              <Typography variant="body2" noWrap sx={{ maxWidth: 140 }}>
+                {file.name || `File ${index + 1}`}
+              </Typography>
+              <Box>
+                <Tooltip title="Preview">
+                  <IconButton size="small" href={file.url} target="_blank">
+                    <VisibilityRounded fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Download">
+                  <IconButton size="small" href={file.url} download>
+                    <DownloadRounded fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+          ))
+        )}
+      </Popover>
+    </>
+  );
+};
+
 
 const AppointmentHistoryContent = ({ completedIncidents }: { completedIncidents: any[] }) => {
   const currentYear = new Date().getFullYear();
@@ -323,6 +437,7 @@ const AppointmentHistoryContent = ({ completedIncidents }: { completedIncidents:
                     <th style={{ padding: '12px', textAlign: 'left' }}>Description</th>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Cost</th>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Files</th>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Comments</th>
                   </tr>
                 </thead>
@@ -334,14 +449,34 @@ const AppointmentHistoryContent = ({ completedIncidents }: { completedIncidents:
                       <td style={{ padding: '12px' }}>{incident.description}</td>
                       <td style={{ padding: '12px' }}>${incident.cost}</td>
                       <td style={{ padding: '12px' }}>
-                        <span style={{ 
-                          padding: '4px 8px', 
-                          borderRadius: '4px', 
-                          backgroundColor: '#e8f5e8',
-                          color: '#2e7d32'
-                        }}>
-                          {incident.status}
-                        </span>
+                        <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        color:
+                          incident.status === 'Completed'
+                            ? '#fff'
+                            : incident.status === 'Scheduled'
+                            ? '#fff'
+                            : '#444',
+                        backgroundColor:
+                          incident.status === 'Completed'
+                            ? '#2e7d32' // green
+                            : incident.status === 'Scheduled'
+                            ? '#1976d2' // blue
+                            : '#e0e0e0', // grey for others
+                        border: 'none',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {incident.status}
+                    </span>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <FilesPopover files={incident.files || []} />
                       </td>
                       <td style={{ padding: '12px' }}>{incident.comments || 'No comments'}</td>
                     </tr>
@@ -358,102 +493,133 @@ const AppointmentHistoryContent = ({ completedIncidents }: { completedIncidents:
   );
 };
 
-const ProfileContent = ({ user, patient }: { user: any; patient: any }) => (
-  <div>
-    <Typography variant="h4" gutterBottom>Patient Profile</Typography>
-    <Typography variant="body1" style={{ marginBottom: '20px' }}>
-      Manage your personal information and preferences.
-    </Typography>
-    
-    <Box display="flex" flexWrap="wrap" gap={3}>
-      <Box flex="1" minWidth="400px">
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>Personal Information</Typography>
-            <Box display="flex" flexDirection="column" gap={2}>
-              <TextField 
-                label="Full Name" 
-                defaultValue={patient?.name || user?.name || ''} 
-                variant="outlined" 
-              />
-              <TextField 
-                label="Email" 
-                defaultValue={user?.email || ''} 
-                variant="outlined" 
-              />
-              <TextField 
-                label="Phone" 
-                defaultValue={patient?.contact || ''} 
-                variant="outlined" 
-              />
-              <TextField 
-                label="Date of Birth" 
-                defaultValue={patient?.dob || ''} 
-                type="date" 
-                variant="outlined" 
-                InputLabelProps={{ shrink: true }} 
-              />
-              <TextField 
-                label="Address" 
-                defaultValue="Address not available" 
-                variant="outlined" 
-                multiline 
-                rows={2} 
-              />
-            </Box>
-            <Button variant="contained" style={{ marginTop: '15px' }}>
-              Update Profile
-            </Button>
-          </CardContent>
-        </Card>
+
+const ProfileContent = ({ user, patient }: { user: any; patient: any }) => {
+  const { updatePatient } = useData();
+
+  const [formData, setFormData] = useState({
+    name: patient?.name || user?.name || '',
+    email: user?.email || '',
+    contact: patient?.contact || '',
+    dob: patient?.dob || '',
+    address: patient?.address || '',
+  });
+
+  const handleUpdateProfile = () => {
+    if (!patient?.id) return;
+
+    const updatedPatient = {
+      ...patient,
+      name: formData.name,
+      contact: formData.contact,
+      dob: formData.dob,
+      address: formData.address,
+    };
+
+    updatePatient(patient.id, updatedPatient);
+    alert('Profile updated successfully!');
+  };
+
+  return (
+    <div>
+      <Typography variant="h4" gutterBottom>Patient Profile</Typography>
+      <Typography variant="body1" style={{ marginBottom: '20px' }}>
+        Manage your personal information and preferences.
+      </Typography>
+
+      <Box display="flex" flexWrap="wrap" gap={3}>
+        <Box flex="1" minWidth="400px">
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>Personal Information</Typography>
+              <Box display="flex" flexDirection="column" gap={2}>
+                <TextField
+                  label="Full Name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  variant="outlined"
+                />
+                <TextField
+                  label="Email"
+                  value={formData.email}
+                  disabled
+                  variant="outlined"
+                />
+                <TextField
+                  label="Phone"
+                  value={formData.contact}
+                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                  variant="outlined"
+                />
+                <TextField
+                  label="Date of Birth"
+                  type="date"
+                  value={formData.dob}
+                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  label="Address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  variant="outlined"
+                  multiline
+                  rows={2}
+                />
+              </Box>
+              <Button
+                variant="contained"
+                style={{ marginTop: '15px' }}
+                onClick={handleUpdateProfile}
+              >
+                Update Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </Box>
+
+        <Box flex="1" minWidth="300px">
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>Medical Information</Typography>
+              <Typography variant="body2" style={{ marginBottom: '10px' }}>
+                Health Information: {patient?.healthInfo || 'No information available'}
+              </Typography>
+              <Typography variant="body2" style={{ marginBottom: '10px' }}>
+                Insurance Provider: Not specified
+              </Typography>
+              <Typography variant="body2" style={{ marginBottom: '10px' }}>
+                Policy Number: Not specified
+              </Typography>
+              <Typography variant="body2" style={{ marginBottom: '10px' }}>
+                Emergency Contact: Not specified
+              </Typography>
+              <Typography variant="body2" style={{ marginBottom: '15px' }}>
+                Patient ID: {patient?.id || 'N/A'}
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card style={{ marginTop: '20px' }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>Account Information</Typography>
+              <Typography variant="body2" style={{ marginBottom: '10px' }}>
+                User ID: {user?.id || 'N/A'}
+              </Typography>
+              <Typography variant="body2" style={{ marginBottom: '10px' }}>
+                Account Type: {user?.isAdmin ? 'Admin' : 'Patient'}
+              </Typography>
+              <Typography variant="body2" style={{ marginBottom: '15px' }}>
+                Linked Patient ID: {user?.patientId || 'N/A'}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
-      
-      <Box flex="1" minWidth="300px">
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>Medical Information</Typography>
-            <Typography variant="body2" style={{ marginBottom: '10px' }}>
-              Health Information: {patient?.healthInfo || 'No information available'}
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: '10px' }}>
-              Insurance Provider: Not specified
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: '10px' }}>
-              Policy Number: Not specified
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: '10px' }}>
-              Emergency Contact: Not specified
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: '15px' }}>
-              Patient ID: {patient?.id || 'N/A'}
-            </Typography>
-            <Button variant="outlined">
-              Update Medical Info
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card style={{ marginTop: '20px' }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>Account Information</Typography>
-            <Typography variant="body2" style={{ marginBottom: '10px' }}>
-              User ID: {user?.id || 'N/A'}
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: '10px' }}>
-              Account Type: {user?.isAdmin ? 'Admin' : 'Patient'}
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: '15px' }}>
-              Linked Patient ID: {user?.patientId || 'N/A'}
-            </Typography>
-            <Button variant="outlined">
-              Update Preferences
-            </Button>
-          </CardContent>
-        </Card>
-      </Box>
-    </Box>
-  </div>
-);
+    </div>
+  );
+};
 
 export default function PatientDashboard() {
   const [currentPage, setCurrentPage] = useState('upcoming');
