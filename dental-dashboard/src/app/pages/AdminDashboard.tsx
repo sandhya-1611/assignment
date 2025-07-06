@@ -10,7 +10,8 @@ import {
   AddRounded,
   EditRounded,
   DeleteRounded,
-  MenuRounded,LightModeRounded, DarkModeRounded
+  MenuRounded,LightModeRounded, DarkModeRounded,
+  InsertDriveFileRounded, DownloadRounded, VisibilityRounded
 } from '@mui/icons-material';
 import { 
   Typography, 
@@ -534,6 +535,9 @@ const AppointmentsContent = () => {
   const [incidentDialogOpen, setIncidentDialogOpen] = useState(false);
   const [editingIncident, setEditingIncident] = useState<any>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [fileDialogOpen, setFileDialogOpen] = useState(false);
+const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
+
 
   const handleAddIncident = (incidentData: any) => {
     addIncident(incidentData);
@@ -577,6 +581,7 @@ const AppointmentsContent = () => {
                 <TableCell>Treatment</TableCell>
                 <TableCell>Cost</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Files</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -599,6 +604,22 @@ const AppointmentsContent = () => {
                         size="small"
                       />
                     </TableCell>
+                    <TableCell>
+                    <Chip
+                      icon={<InsertDriveFileRounded fontSize="small" />}
+                      label={`${incident.files?.length || 0}`}
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedFiles(incident.files || []);
+                        setFileDialogOpen(true);
+                      }}
+                      sx={{
+                        cursor: 'pointer',
+                        borderRadius: '16px',
+                        paddingX: 1,
+                      }}
+                    />
+                  </TableCell>
                     <TableCell>
                       <IconButton 
                         color="primary" 
@@ -643,6 +664,47 @@ const AppointmentsContent = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <Dialog open={fileDialogOpen} onClose={() => setFileDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Appointment Files</DialogTitle>
+        <DialogContent>
+          {selectedFiles.length === 0 ? (
+            <Typography>No files uploaded for this appointment.</Typography>
+          ) : (
+            <List>
+              {selectedFiles.map((file, index) => (
+                <ListItem key={index}>
+                  <ListItemText primary={file.name} />
+                  <IconButton
+                    onClick={() => {
+                      const blob = new Blob([file.content], { type: file.type });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = file.name;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <DownloadRounded />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      const blob = new Blob([file.content], { type: file.type });
+                      const url = URL.createObjectURL(blob);
+                      window.open(url, '_blank');
+                    }}
+                  >
+                    <VisibilityRounded />
+                  </IconButton>
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFileDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
@@ -651,6 +713,17 @@ const AppointmentsContent = () => {
 const TreatmentsContent = () => {
   const { incidents, patients } = useData();
   const completedTreatments = incidents.filter(incident => incident.status === 'Completed');
+  const [selectedTreatment, setSelectedTreatment] = useState(null);
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<{ name: string; url: string }[]>([]);
+
+
+  const handleOpenFileViewer = (treatment: any) => {
+  setSelectedTreatment(treatment);
+  setSelectedFiles(treatment.files || []); 
+  setFileViewerOpen(true);
+};
+
 
   return (
     <div>
@@ -665,6 +738,7 @@ const TreatmentsContent = () => {
                 <TableCell>Date</TableCell>
                 <TableCell>Cost</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Files</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -679,6 +753,19 @@ const TreatmentsContent = () => {
                     <TableCell>
                       <Chip label={treatment.status} color="success" size="small" />
                     </TableCell>
+                    <TableCell>
+                    <IconButton
+                      onClick={() => handleOpenFileViewer(treatment)}
+                      size="small"
+                    >
+                      <Chip
+                        icon={<InsertDriveFileRounded fontSize="small" />}
+                        label={`${treatment.files?.length || 0}`}
+                        variant="outlined"
+                        sx={{ borderRadius: '16px', px: 1 }}
+                      />
+                    </IconButton>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -686,6 +773,11 @@ const TreatmentsContent = () => {
           </Table>
         </CardContent>
       </Card>
+      <FileViewer
+        open={fileViewerOpen}
+        onClose={() => setFileViewerOpen(false)}
+        files={selectedFiles}
+      />
     </div>
   );
 };
