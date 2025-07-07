@@ -163,4 +163,3 @@ Payment integration
 Mobile app with React Native
 
 Multi-user roles (Receptionist, Assistant)
-
