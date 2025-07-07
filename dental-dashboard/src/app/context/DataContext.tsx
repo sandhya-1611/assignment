@@ -60,6 +60,7 @@ export function DataProvider({children}: {children: React.ReactNode}){
     const [incidents, setIncidents] = useState<Incident[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
+    // Load initial data
     useEffect(() => {
         const isInitialized = localStorage.getItem(STORAGE_KEYS.INITIALIZED)
 
@@ -70,11 +71,44 @@ export function DataProvider({children}: {children: React.ReactNode}){
             localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true")
         }
 
-    setUsers(JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]'));
-    setPatients(JSON.parse(localStorage.getItem(STORAGE_KEYS.PATIENTS) || '[]'));
-    setIncidents(JSON.parse(localStorage.getItem(STORAGE_KEYS.INCIDENTS) || '[]'));
-    setIsLoading(false)
+        loadDataFromStorage()
     },[])
+
+    // Listen for storage changes from other tabs/windows
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === STORAGE_KEYS.PATIENTS || 
+                e.key === STORAGE_KEYS.INCIDENTS || 
+                e.key === STORAGE_KEYS.USERS) {
+                loadDataFromStorage()
+            }
+        }
+
+        // Listen for custom events for same-tab updates
+        const handleDataUpdate = () => {
+            loadDataFromStorage()
+        }
+
+        window.addEventListener('storage', handleStorageChange)
+        window.addEventListener('dataUpdated', handleDataUpdate)
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange)
+            window.removeEventListener('dataUpdated', handleDataUpdate)
+        }
+    }, [])
+
+    const loadDataFromStorage = () => {
+        setUsers(JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]'));
+        setPatients(JSON.parse(localStorage.getItem(STORAGE_KEYS.PATIENTS) || '[]'));
+        setIncidents(JSON.parse(localStorage.getItem(STORAGE_KEYS.INCIDENTS) || '[]'));
+        setIsLoading(false)
+    }
+
+    // Helper function to notify other components about data changes
+    const notifyDataUpdate = () => {
+        window.dispatchEvent(new CustomEvent('dataUpdated'))
+    }
 
     const reloadData = () => {
         localStorage.removeItem(STORAGE_KEYS.INITIALIZED);
@@ -87,9 +121,8 @@ export function DataProvider({children}: {children: React.ReactNode}){
         localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(incidentData));
         localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true");
 
-        setUsers(JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]'));
-        setPatients(JSON.parse(localStorage.getItem(STORAGE_KEYS.PATIENTS) || '[]'));
-        setIncidents(JSON.parse(localStorage.getItem(STORAGE_KEYS.INCIDENTS) || '[]'));
+        loadDataFromStorage();
+        notifyDataUpdate()
     };
 
     const validateUser = (email:string,password:string): User | undefined => {
@@ -106,18 +139,21 @@ export function DataProvider({children}: {children: React.ReactNode}){
         const newPatientsList = [...patients,newPatient]
         setPatients(newPatientsList)
         localStorage.setItem(STORAGE_KEYS.PATIENTS,JSON.stringify(newPatientsList))
+        notifyDataUpdate()
     }
 
     const updatePatient = (patientId: string,updatePatient: Patient) => {
         const newPatientsList = patients.map((patient) => patient.id === patientId ? updatePatient : patient)
         setPatients(newPatientsList)
         localStorage.setItem(STORAGE_KEYS.PATIENTS,JSON.stringify(newPatientsList))
+        notifyDataUpdate()
     }
 
     const deletePatient = (patientId: string) => {
         const newPatientsList = patients.filter((patient) => patient.id !== patientId)
         setPatients(newPatientsList)
         localStorage.setItem(STORAGE_KEYS.PATIENTS,JSON.stringify(newPatientsList))
+        notifyDataUpdate()
     }
 
     const addIncident = (incident: Incident) => {
@@ -128,18 +164,21 @@ export function DataProvider({children}: {children: React.ReactNode}){
         const newIncidentsList = [...incidents,newIncident]
         setIncidents(newIncidentsList)
         localStorage.setItem(STORAGE_KEYS.INCIDENTS,JSON.stringify(newIncidentsList))
+        notifyDataUpdate()
     }
 
     const updateIncident = (incidentId: string,updateIncident: Incident) => {
         const newIncidentsList = incidents.map((incident) => incident.id === incidentId ? updateIncident : incident)
         setIncidents(newIncidentsList)
         localStorage.setItem(STORAGE_KEYS.INCIDENTS,JSON.stringify(newIncidentsList))
+        notifyDataUpdate()
     }
 
     const deleteIncident = (incidentId: string) => {
         const newIncidentsList = incidents.filter((incident) => incident.id !== incidentId)
         setIncidents(newIncidentsList)
         localStorage.setItem(STORAGE_KEYS.INCIDENTS,JSON.stringify(newIncidentsList))
+        notifyDataUpdate()
     }
     
     const getIncidentsByPatientId = (patientId: string): Incident[] => {
@@ -147,15 +186,16 @@ export function DataProvider({children}: {children: React.ReactNode}){
     }
 
     const updateProfile = (updateProfile: any) => {
-  setPatients((prev) =>
-    prev.map((p) => (p.id === updateProfile.id ? updateProfile : p))
-  );
+        setPatients((prev) =>
+            prev.map((p) => (p.id === updateProfile.id ? updateProfile : p))
+        );
 
-  const updatedList = patients.map((p) =>
-    p.id === updateProfile.id ? updateProfile : p
-  );
-  localStorage.setItem('patients', JSON.stringify(updatedList));
-};
+        const updatedList = patients.map((p) =>
+            p.id === updateProfile.id ? updateProfile : p
+        );
+        localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(updatedList));
+        notifyDataUpdate()
+    };
 
 
     const getPatientById = (patientId: string): Patient | null => {
