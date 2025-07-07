@@ -60,39 +60,33 @@ export function DataProvider({children}: {children: React.ReactNode}){
     const [incidents, setIncidents] = useState<Incident[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    //initialize data in local storage
     useEffect(() => {
         const isInitialized = localStorage.getItem(STORAGE_KEYS.INITIALIZED)
 
         if(!isInitialized){
-            //setting data in local storage
             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(usersData))
             localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patientsData))
             localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(incidentData))
             localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true")
         }
 
-         // Load data from localStorage
     setUsers(JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]'));
     setPatients(JSON.parse(localStorage.getItem(STORAGE_KEYS.PATIENTS) || '[]'));
     setIncidents(JSON.parse(localStorage.getItem(STORAGE_KEYS.INCIDENTS) || '[]'));
     setIsLoading(false)
     },[])
 
-    // forcing reload data
     const reloadData = () => {
         localStorage.removeItem(STORAGE_KEYS.INITIALIZED);
         localStorage.removeItem(STORAGE_KEYS.USERS);
         localStorage.removeItem(STORAGE_KEYS.PATIENTS);
         localStorage.removeItem(STORAGE_KEYS.INCIDENTS);
-        
-        // Reinitializing with fresh data
+
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(usersData));
         localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patientsData));
         localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(incidentData));
         localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true");
-        
-        // Reloading state
+
         setUsers(JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]'));
         setPatients(JSON.parse(localStorage.getItem(STORAGE_KEYS.PATIENTS) || '[]'));
         setIncidents(JSON.parse(localStorage.getItem(STORAGE_KEYS.INCIDENTS) || '[]'));
@@ -104,7 +98,6 @@ export function DataProvider({children}: {children: React.ReactNode}){
         return usersData.find(user => user.email === email && user.hashedPassword === hashedPassword)
     }
 
-    // For adding:
     const addPatient = (patient: Patient) => {
         const newPatient = {
             ...patient,
@@ -115,14 +108,12 @@ export function DataProvider({children}: {children: React.ReactNode}){
         localStorage.setItem(STORAGE_KEYS.PATIENTS,JSON.stringify(newPatientsList))
     }
 
-     // for updating:
     const updatePatient = (patientId: string,updatePatient: Patient) => {
         const newPatientsList = patients.map((patient) => patient.id === patientId ? updatePatient : patient)
         setPatients(newPatientsList)
         localStorage.setItem(STORAGE_KEYS.PATIENTS,JSON.stringify(newPatientsList))
     }
 
-      // for deleting:
     const deletePatient = (patientId: string) => {
         const newPatientsList = patients.filter((patient) => patient.id !== patientId)
         setPatients(newPatientsList)

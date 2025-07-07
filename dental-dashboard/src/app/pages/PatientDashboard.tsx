@@ -633,15 +633,12 @@ export default function PatientDashboard() {
   const { getIncidentsByPatientId, getPatientById, addIncident, isLoading } = useData();
 
   const theme = useTheme();
-const { toggleColorMode } = useColorMode();
-const isDarkMode = theme.palette.mode === 'dark';
+  const { toggleColorMode } = useColorMode();
+  const isDarkMode = theme.palette.mode === 'dark';
 
-
-  // Get patient data and incidents
   const patient = user?.patientId ? getPatientById(user.patientId) : null;
   const allIncidents = user?.patientId ? getIncidentsByPatientId(user.patientId) : [];
 
-  // Separate upcoming and completed appointments
   const { upcomingIncidents, completedIncidents } = useMemo(() => {
     const now = new Date();
     const upcoming = allIncidents.filter(incident => 
@@ -744,9 +741,9 @@ const miniDrawerWidth = 104;
       width: drawerOpen ? drawerWidth : miniDrawerWidth,
       overflowX: 'hidden',
       overflowY: 'hidden',
-      scrollbarWidth: 'none', // For Firefox
+      scrollbarWidth: 'none', 
       '&::-webkit-scrollbar': {
-        display: 'none', // For Chrome/Safari
+        display: 'none',
       },
     },
   }}

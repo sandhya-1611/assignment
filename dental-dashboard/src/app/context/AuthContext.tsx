@@ -23,13 +23,13 @@ export function AuthProvider({children}: {children: React.ReactNode}){
     const navigate = useNavigate()
 
     useEffect(() => {
-        // check localStorage for loggedInUser
+
         const loggedInUser = localStorage.getItem("loggedInUser")
 
         if(loggedInUser){
             const userData = JSON.parse(loggedInUser)
             setUser(userData)
-            // navigate them to the respective dashboard using the parsed data directly
+
             if(userData && userData.isAdmin){
                 navigate("/admin/dashboard")
             }else{
@@ -37,7 +37,6 @@ export function AuthProvider({children}: {children: React.ReactNode}){
             }
         }
         else{
-            // if no user is loggen in, redirect them to the login page
             navigate("/")
         }
     },[navigate])

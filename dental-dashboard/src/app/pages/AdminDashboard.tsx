@@ -57,7 +57,6 @@ import FileUpload from '../components/FileUpload';
 import FileViewer from '../components/FileViewer';
 import Calendar from '../components/Calendar';
 
-// Navigation items
 const navigationItems = [
   { id: 'overview', title: 'Overview', icon: <DashboardRounded /> },
   { id: 'patients', title: 'Patients', icon: <PeopleRounded /> },
@@ -68,7 +67,6 @@ const navigationItems = [
   { id: 'settings', title: 'Settings', icon: <SettingsRounded /> },
 ];
 
-// Patient Form Dialog Component
 const PatientFormDialog = ({ 
   open, 
   onClose, 
@@ -332,7 +330,7 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             value={formData.comments}
             onChange={(e) => setFormData({...formData, comments: e.target.value})}
           />
-          {/* File Upload Section */}
+
         <Box>
   <Typography variant="subtitle1" gutterBottom>Treatment Files</Typography>
   <Typography variant="body2" color="textSecondary">
@@ -377,7 +375,6 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   );
 };
 
-// Content components
 const OverviewContent = () => {
   const { patients, incidents } = useData();
   
@@ -422,8 +419,7 @@ const OverviewContent = () => {
   return (
     <div>
       <Typography variant="h4" gutterBottom>Admin Dashboard Overview</Typography>
-      
-      {/* KPI Cards */}
+
       <Box display="flex" flexWrap="wrap" gap={2} marginBottom="30px">
         <Card style={{ flex: '1', minWidth: '200px' }}>
           <CardContent>
@@ -451,7 +447,6 @@ const OverviewContent = () => {
         </Card>
       </Box>
 
-      {/* Next 10 Appointments */}
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>Next 10 Appointments</Typography>
@@ -773,7 +768,6 @@ const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
   );
 };
 
-// Simplified content components
 const TreatmentsContent = () => {
   const { incidents, patients } = useData();
   const completedTreatments = incidents.filter(incident => incident.status === 'Completed');
@@ -958,9 +952,6 @@ const SettingsContent = () => {
           <Typography variant="body2">Address: 123 Healthcare Ave</Typography>
           <Typography variant="body2">Phone: (555) 987-6543</Typography>
           <Typography variant="body2">Email: admin@dentalflow.com</Typography>
-          {/* <Button variant="outlined" style={{ marginTop: '15px' }}>
-            Edit Settings
-          </Button> */}
         </CardContent>
       </Card>
       
@@ -1028,7 +1019,7 @@ const miniDrawerWidth = 64;
     <Box
       sx={{
         overflowX: 'hidden',
-        overflowY: 'hidden', // ❌ Removes vertical scroll
+        overflowY: 'hidden', 
         flexGrow: 1,
       }}
     >
@@ -1141,13 +1132,13 @@ const miniDrawerWidth = 64;
   component="main"
   sx={{
     flexGrow: 1,
-    p: 2, // reduce padding inside main content
+    p: 2, 
     transition: (theme) =>
       theme.transitions.create('margin', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
-    marginLeft: drawerOpen ? `${drawerWidth - 180}px` : `${miniDrawerWidth - 54}px`, // reduce gap
+    marginLeft: drawerOpen ? `${drawerWidth - 180}px` : `${miniDrawerWidth - 54}px`,
   }}
 >
   <Toolbar />

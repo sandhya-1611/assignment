@@ -58,13 +58,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const validFiles: FileData[] = [];
 
     selectedFiles.forEach((file) => {
-      // Check file size
+
       if (file.size > maxSizeInMB * 1024 * 1024) {
         setError(`File ${file.name} is too large. Maximum size is ${maxSizeInMB}MB`);
         return;
       }
 
-      // Check file type
       const isValidType = acceptedTypes.some(type => {
         if (type.includes('*')) {
           return file.type.startsWith(type.split('*')[0]);
@@ -77,7 +76,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
         return;
       }
 
-      // Convert to base64
       const reader = new FileReader();
       reader.onload = () => {
         const base64String = reader.result as string;
@@ -121,9 +119,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const getFileSizeFromBase64 = (base64String: string) => {
-    // Remove data URL prefix if present
+  
     const base64Data = base64String.includes(',') ? base64String.split(',')[1] : base64String;
-    // Calculate approximate size (base64 is ~4/3 larger than original)
+
     return Math.round((base64Data.length * 3) / 4);
   };
 
@@ -197,7 +195,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
         </Typography>
       )}
 
-      {/* File Preview Dialog */}
       <Dialog 
         open={!!previewFile} 
         onClose={handleClosePreview}

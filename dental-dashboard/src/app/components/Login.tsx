@@ -11,7 +11,7 @@ type LoginCredentials = {
 }
 
 const Login = () => {
-    const {logIn} = useAuth() // using the context provider.
+    const {logIn} = useAuth() 
     const {validateUser} = useData()
     const [loginCredentials, setLoginCredentials] = useState<LoginCredentials>({
         email: "",
@@ -20,7 +20,7 @@ const Login = () => {
 
     const [openSnackbar, setOpenSnackbar] = useState({
         open: false,
-        severity: "" //success, error
+        severity: "" 
     })
     const [snackbarMessage, setSnackbarMessage] = useState("")
 
@@ -34,8 +34,7 @@ const Login = () => {
             setOpenSnackbar({open: true, severity: "error"})
             return
         }
-        
-        // we are storing all info except the password for the logged in user.
+
         const loggedInUser = {
                 email: user.email,
                 isAdmin: user.isAdmin,
@@ -46,8 +45,7 @@ const Login = () => {
         
         setSnackbarMessage("Login successful")
         setOpenSnackbar({open: true, severity: "success"})
-        
-        //sets the logged in user in the localStorage
+
         logIn(loggedInUser)
     }
 

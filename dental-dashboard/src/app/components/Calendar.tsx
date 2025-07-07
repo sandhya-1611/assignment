@@ -43,7 +43,6 @@ const Calendar: React.FC<CalendarProps> = ({ appointments, patients }) => {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [dayDialogOpen, setDayDialogOpen] = useState(false);
   
-  // Group appointments by date
   const appointmentsByDate = useMemo(() => {
     const grouped: { [key: string]: any[] } = {};
     appointments.forEach(appointment => {
@@ -66,12 +65,10 @@ const Calendar: React.FC<CalendarProps> = ({ appointments, patients }) => {
     
     const days = [];
     
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    
-    // Add all days of the month
+
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
@@ -122,7 +119,6 @@ const Calendar: React.FC<CalendarProps> = ({ appointments, patients }) => {
       </Box>
 
       <Paper style={{ padding: '20px' }}>
-        {/* Day Headers */}
         <Box display="flex" marginBottom="10px">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <Box 
@@ -138,14 +134,13 @@ const Calendar: React.FC<CalendarProps> = ({ appointments, patients }) => {
           ))}
         </Box>
         
-        {/* Calendar Grid */}
         <Box display="flex" flexWrap="wrap">
           {days.map((day, index) => {
             const dayAppointments = day ? appointmentsByDate[day.toDateString()] || [] : [];
             const isToday = day && day.toDateString() === new Date().toDateString();
             
             return (
-                              <Box 
+                  <Box 
                   key={index} 
                   width="14.28%" 
                   minHeight="120px" 
@@ -219,7 +214,6 @@ const Calendar: React.FC<CalendarProps> = ({ appointments, patients }) => {
         </Box>
       </Paper>
 
-      {/* Day Details Dialog */}
       <Dialog 
         open={dayDialogOpen} 
         onClose={handleCloseDayDialog}

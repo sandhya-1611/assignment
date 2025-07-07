@@ -8,9 +8,9 @@ import { useData } from '@/app/context/DataContext'
 const IncidentTableData = () => {
 
   const {getIncidentsByPatientId,isLoading,incidents} = useData()
-  const {user} = useAuth()  // we are getting the logged in user
+  const {user} = useAuth() 
 
-  const userIncidents = getIncidentsByPatientId(user?.patientId || "") // we are getting the incidents for the logged in user
+  const userIncidents = getIncidentsByPatientId(user?.patientId || "") 
 
   return (
     <TableBody>

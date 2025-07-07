@@ -1,4 +1,3 @@
-// LocalStorage keys
 export const STORAGE_KEYS = {
     USERS: 'dentalflow_users',
     PATIENTS: 'dentalflow_patients',
