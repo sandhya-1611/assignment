@@ -228,6 +228,14 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     }
   }, [incident]);
 
+  const handleRemoveFile = (index: number) => {
+  setFormData((prev) => ({
+    ...prev,
+    files: prev.files.filter((_, i) => i !== index),
+  }));
+};
+
+
   const handleSubmit = () => {
     if (!formData.patientId || !formData.title || !formData.appointmentDate) {
       alert('Please fill in all required fields');
@@ -334,7 +342,7 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         <Box>
   <Typography variant="subtitle1" gutterBottom>Treatment Files</Typography>
   <Typography variant="body2" color="textSecondary">
-    Accepted formats: Images, PDF, Word documents. Max size: 10MB per file. Max files: 5
+    Accepted formats: Images, PDF, Word documents.
   </Typography>
   <input
     accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
@@ -354,10 +362,18 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   ) : (
     <List sx={{ mt: 1 }}>
       {formData.files.map((file, index) => (
-        <ListItem key={index}>
-          <ListItemText primary={file.name} />
-        </ListItem>
-      ))}
+  <ListItem
+    key={index}
+    secondaryAction={
+      <IconButton edge="end" color="error" onClick={() => handleRemoveFile(index)}>
+        <DeleteRounded />
+      </IconButton>
+    }
+  >
+    <ListItemText primary={file.name} />
+  </ListItem>
+))}
+
     </List>
   )}
 </Box>
@@ -711,7 +727,7 @@ const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
           setEditingIncident(null);
         }}
         onSubmit={editingIncident ? handleEditIncident : handleAddIncident}
-        incident={editingIncident}
+        incident={editingIncident ? { ...editingIncident } : undefined} // ✅ make sure to clone
       />
 
       <Snackbar
