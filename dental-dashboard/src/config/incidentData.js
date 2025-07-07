@@ -74,7 +74,7 @@ export const incidentData = [
     "comments": "Awaiting orthodontist plan",
     "appointmentDate": "2025-07-26T10:45:00",
     "cost": 100,
-    "status": "Pending",
+    "status": "Scheduled",
     "files": []
   },
   {
